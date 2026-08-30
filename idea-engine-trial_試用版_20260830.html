@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>靈感籤筒｜自媒體選題引擎</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#C9938A; --soft-pink:#E8C4BC; --light-pink:#F5E6E3;
+  --blue:#7A9BAD; --soft-blue:#B8CFDA; --light-blue:#E3EDF3;
+  --sage:#9AAE9B; --light-sage:#E8F0E8;
+  --cream:#FAF3EE; --bg:#FAFAF8; --dark:#37352F; --medium:#5A5248; --gray:#9B9A97;
+  --radius:16px;
+  --shadow:0 2px 12px rgba(55,53,47,0.06);
+  --shadow-hover:0 6px 20px rgba(55,53,47,0.10);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Noto Sans TC', sans-serif;
+  background:var(--bg);
+  color:var(--dark);
+  line-height:1.6;
+  padding-bottom:60px;
+}
+a{color:inherit;}
+button{font-family:inherit; cursor:pointer; border:none;}
+input, textarea, select{font-family:inherit;}
+
+/* ===== Top bar ===== */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:var(--cream);
+  border-bottom:1px solid var(--soft-pink);
+  padding:14px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+}
+.brand{
+  display:flex; align-items:center; gap:10px;
+}
+.brand .logo{
+  width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg, var(--pink), var(--blue));
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+}
+.brand h1{font-size:20px; font-weight:900; letter-spacing:0.5px;}
+.brand span{display:block; font-size:11px; color:var(--gray); font-weight:400; margin-top:1px;}
+.topbar-actions{display:flex; gap:8px;}
+.icon-btn{
+  background:#fff; border:1px solid var(--soft-pink); border-radius:10px;
+  padding:8px 10px; font-size:13px; color:var(--medium); font-weight:700;
+  display:flex; align-items:center; gap:5px;
+}
+.icon-btn:hover{background:var(--light-pink);}
+
+/* ===== Bottom nav (mobile-first) ===== */
+.nav{
+  position:fixed; bottom:0; left:0; right:0; z-index:50;
+  background:#fff;
+  border-top:1px solid var(--soft-pink);
+  display:flex;
+  box-shadow:0 -2px 12px rgba(55,53,47,0.06);
+}
+.nav button{
+  flex:1; background:none; padding:10px 4px 8px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  color:var(--gray); font-size:11px; font-weight:700;
+}
+.nav button .ic{font-size:19px;}
+.nav button.active{color:var(--pink);}
+
+/* ===== Layout container ===== */
+.container{
+  max-width:960px; margin:0 auto; padding:20px 16px 40px;
+}
+.view{display:none;}
+.view.active{display:block; animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.page-title{
+  font-size:20px; font-weight:900; margin-bottom:4px;
+}
+.page-sub{
+  font-size:13px; color:var(--gray); margin-bottom:20px;
+}
+
+/* ===== Dashboard cards ===== */
+.cards-grid{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-bottom:24px;
+}
+@media(min-width:640px){.cards-grid{grid-template-columns:repeat(4, 1fr);}}
+.stat-card{
+  background:#fff; border-radius:var(--radius); padding:16px;
+  box-shadow:var(--shadow); border:1px solid rgba(0,0,0,0.03);
+}
+.stat-card .num{font-size:26px; font-weight:900;}
+.stat-card .label{font-size:12px; color:var(--gray); margin-top:2px; font-weight:500;}
+.stat-card.pink{background:var(--light-pink);}
+.stat-card.blue{background:var(--light-blue);}
+.stat-card.sage{background:var(--light-sage);}
+.stat-card.cream{background:var(--cream);}
+
+.section-block{
+  background:#fff; border-radius:var(--radius); padding:18px;
+  box-shadow:var(--shadow); margin-bottom:16px;
+}
+.section-block h3{font-size:15px; font-weight:700; margin-bottom:12px;}
+.empty-hint{
+  text-align:center; padding:32px 16px; color:var(--gray); font-size:13px;
+}
+.empty-hint .big-ic{font-size:32px; display:block; margin-bottom:8px;}
+.cta-btn{
+  display:inline-block; background:var(--pink); color:#fff; font-weight:700;
+  padding:10px 18px; border-radius:10px; font-size:13px; margin-top:10px;
+}
+
+/* ===== List ===== */
+.toolbar{
+  display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;
+}
+.toolbar input[type=text]{
+  flex:1; min-width:140px; padding:10px 14px; border-radius:10px;
+  border:1px solid var(--soft-pink); background:#fff; font-size:13px;
+}
+.toolbar select{
+  padding:10px 12px; border-radius:10px; border:1px solid var(--soft-pink);
+  background:#fff; font-size:13px; color:var(--medium);
+}
+.topic-card{
+  background:#fff; border-radius:var(--radius); padding:16px;
+  box-shadow:var(--shadow); margin-bottom:12px;
+  border-left:4px solid var(--pink);
+  cursor:pointer; transition:box-shadow .15s;
+}
+.topic-card:hover{box-shadow:var(--shadow-hover);}
+.topic-card .top-row{
+  display:flex; justify-content:space-between; align-items:flex-start; gap:8px;
+}
+.topic-card .theme{font-size:15px; font-weight:700;}
+.topic-card .date{font-size:11px; color:var(--gray); white-space:nowrap;}
+.topic-card .meta{
+  font-size:12px; color:var(--medium); margin-top:6px;
+  display:flex; gap:10px; flex-wrap:wrap;
+}
+.tag{
+  display:inline-block; background:var(--light-blue); color:var(--blue);
+  font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px;
+}
+.tag.sage{background:var(--light-sage); color:var(--sage);}
+.progress-row{display:flex; gap:14px; margin-top:10px; font-size:11px; color:var(--gray);}
+.progress-row b{color:var(--dark);}
+
+/* ===== Form ===== */
+.form-group{margin-bottom:16px;}
+.form-group label{
+  display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--medium);
+}
+.form-group .hint{font-size:11px; color:var(--gray); font-weight:400; margin-top:4px;}
+.form-group input[type=text], .form-group textarea{
+  width:100%; padding:11px 14px; border-radius:10px;
+  border:1px solid var(--soft-pink); background:#fff; font-size:14px; color:var(--dark);
+}
+.form-group textarea{resize:vertical; min-height:60px;}
+.form-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media(max-width:560px){.form-row{grid-template-columns:1fr;}}
+.btn{
+  padding:12px 20px; border-radius:10px; font-size:14px; font-weight:700;
+}
+.btn-primary{background:var(--pink); color:#fff;}
+.btn-secondary{background:var(--light-blue); color:var(--blue);}
+.btn-ghost{background:var(--cream); color:var(--medium); border:1px solid var(--soft-pink);}
+.btn-danger{background:#F5E6E3; color:#B05A4A;}
+.form-actions{display:flex; gap:10px; margin-top:22px; flex-wrap:wrap;}
+
+/* ===== Detail / tabs ===== */
+.detail-header{
+  background:var(--light-pink); border-radius:var(--radius); padding:18px; margin-bottom:16px;
+}
+.detail-header .theme{font-size:18px; font-weight:900; margin-bottom:8px;}
+.detail-header .meta-line{font-size:12px; color:var(--medium); display:flex; gap:14px; flex-wrap:wrap;}
+
+.tabs{display:flex; gap:8px; margin-bottom:16px;}
+.tab-btn{
+  flex:1; background:#fff; border:1px solid var(--soft-pink); border-radius:10px;
+  padding:10px; font-size:13px; font-weight:700; color:var(--medium);
+}
+.tab-btn.active{background:var(--pink); color:#fff; border-color:var(--pink);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.idea-item{
+  background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+  box-shadow:var(--shadow); display:flex; gap:12px; align-items:flex-start;
+}
+.idea-item .no-badge{
+  width:26px; height:26px; border-radius:50%; background:var(--light-blue); color:var(--blue);
+  font-size:12px; font-weight:900; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:2px;
+}
+.idea-item .idea-body{flex:1; min-width:0;}
+.idea-item .idea-title{font-size:14px; font-weight:700; line-height:1.5;}
+.idea-item .idea-hint{font-size:11px; color:var(--gray); margin-top:4px;}
+.idea-item .checkbox-wrap{flex-shrink:0; padding-top:4px;}
+.idea-item input[type=checkbox]{width:18px; height:18px; accent-color:var(--pink);}
+.idea-content{
+  margin-top:10px; padding-top:10px; border-top:1px dashed var(--soft-pink);
+  font-size:13px; color:var(--medium); white-space:pre-wrap; display:none;
+}
+.idea-content.show{display:block;}
+.faq-item{padding:18px 0; border-bottom:1px solid var(--soft-pink);}
+.faq-item:first-child{padding-top:4px;}
+.faq-item:last-child{border-bottom:none; padding-bottom:4px;}
+.faq-q{font-size:15px; font-weight:900; color:var(--dark); line-height:1.6;}
+.faq-q .qmark{color:var(--pink); font-weight:900; margin-right:6px;}
+.faq-a{font-size:13px; color:var(--medium); line-height:1.8; margin-top:8px;}
+.idea-item.used{border-left:3px solid var(--sage);}
+.toggle-content-btn{
+  font-size:11px; color:var(--blue); font-weight:700; margin-top:6px; display:inline-block;
+}
+.copy-btn{
+  font-size:11px; color:var(--pink); font-weight:700; margin-top:8px; display:inline-block;
+}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed; bottom:74px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--dark); color:#fff; padding:10px 18px; border-radius:30px;
+  font-size:13px; opacity:0; pointer-events:none; transition:all .25s; z-index:100;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ===== Import modal ===== */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(55,53,47,0.4); z-index:80;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:#fff; border-radius:16px; padding:22px; max-width:400px; width:100%;
+}
+.modal-box h3{font-size:15px; font-weight:700; margin-bottom:10px;}
+.modal-box p{font-size:13px; color:var(--medium); margin-bottom:14px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">🎴</div>
+    <div>
+      <h1>靈感籤筒 <span style="display:inline-block; background:var(--pink); color:#fff; font-size:11px; font-weight:900; padding:2px 8px; border-radius:10px; vertical-align:middle;">試用版</span><span>自媒體選題引擎 · v1.1</span></h1>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="goAbout()">ℹ️ 說明</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ============ Dashboard ============ -->
+  <div class="view active" id="view-dashboard">
+    <div class="page-title">儀表板</div>
+    <div class="page-sub">今天，抽一支籤，決定要拍什麼</div>
+
+    <div class="cards-grid">
+      <div class="stat-card pink">
+        <div class="num" id="stat-total">0</div>
+        <div class="label">總選題數</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="num" id="stat-week">0</div>
+        <div class="label">本週新增</div>
+      </div>
+      <div class="stat-card sage">
+        <div class="num" id="stat-posts-used">0/0</div>
+        <div class="label">貼文題目已用</div>
+      </div>
+      <div class="stat-card cream">
+        <div class="num" id="stat-videos-used">0/0</div>
+        <div class="label">影片題目已用</div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>最新選題</h3>
+      <div id="dashboard-recent"></div>
+    </div>
+
+    <div class="section-block" style="background:var(--light-pink);">
+      <div style="font-size:12px; color:var(--medium); font-weight:700;" id="dashboard-trial-line">
+        🎴 這是<span style="color:var(--pink); font-weight:900;">試用版</span>，可以免費體驗抽 1 次完整選題（10組貼文+6組影片）
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:8px;">
+      <button class="cta-btn" onclick="goForm()">＋ 新增一組選題</button>
+    </div>
+  </div>
+
+  <!-- ============ List ============ -->
+  <div class="view" id="view-list">
+    <div class="page-title">選題列表</div>
+    <div class="page-sub">搜尋、篩選你曾經抽過的每一支籤</div>
+
+    <div class="toolbar">
+      <input type="text" id="search-input" placeholder="搜尋主題／身份／工作內容…" oninput="renderList()">
+      <select id="filter-select" onchange="renderList()">
+        <option value="all">全部</option>
+        <option value="unused">尚未使用</option>
+        <option value="used">已使用過</option>
+      </select>
+    </div>
+
+    <div id="list-container"></div>
+  </div>
+
+  <!-- ============ Form ============ -->
+  <div class="view" id="view-form">
+    <div class="page-title" id="form-title">新增選題</div>
+    <div class="page-sub">輸入你的角色與主題，自動抽出 10 組貼文 + 6 組影片題目</div>
+
+    <div class="section-block" style="background:var(--light-blue); padding:14px;">
+      <div style="font-size:12px; color:var(--medium); line-height:1.8;">
+        💡 <b style="color:var(--blue);">不知道自己有什麼「專業」可以填？</b>試著換個角度想：你每天實際在做的事，就是內容素材——例如育兒作息安排、收納整理、家庭理財省錢、副食品準備，都可以直接寫進「工作內容」欄位；「一句話定位」也不用寫得很厲害，寫「陪自己一邊帶小孩、一邊摸索在家生活」這種真實的狀態就好。「我也是普通人、也在摸索」本身就是很多人會有共鳴的內容角度，不需要先變成專家才能開始拍。
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>主題／今天想聊什麼</label>
+      <input type="text" id="f-theme" placeholder="例如：產後恢復身材、保單理賠眉角、副業接案心得…">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>身份／角色</label>
+        <input type="text" id="f-identity" placeholder="例如：兩寶媽、保險業務、自由接案者">
+      </div>
+      <div class="form-group">
+        <label>工作內容</label>
+        <input type="text" id="f-work" placeholder="例如：幫客戶規劃保單、拍攝居家美學影片">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>一句話定位（選填）</label>
+      <input type="text" id="f-tagline" placeholder="例如：幫新手爸媽找到適合的保單">
+      <div class="hint">用一句話說清楚你在幫誰解決什麼問題，會讓抽出來的題目語氣更貼近你</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>職業定位九宮格關鍵字（選填，逗號分隔）</label>
+        <input type="text" id="f-career-kw" placeholder="例如：理賠,保單健檢,退休規劃">
+        <div class="hint">用來增加主題句的變化，不填也能產生</div>
+      </div>
+      <div class="form-group">
+        <label>個人興趣九宮格關鍵字（選填，逗號分隔）</label>
+        <input type="text" id="f-hobby-kw" placeholder="例如：露營,烘焙,追劇">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>備註（選填）</label>
+      <textarea id="f-notes" placeholder="任何想留給自己的提醒…"></textarea>
+    </div>
+
+    <div class="section-block" style="background:var(--light-pink); padding:14px;">
+      <div style="font-size:12px; color:var(--medium); font-weight:700;" id="trial-status-line">
+        🎴 免費試用：可以抽 1 次完整內容（10組貼文+6組影片）
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" id="btn-generate" onclick="generateAndSave()">🎴 抽籤產生選題</button>
+      <button class="btn btn-ghost" onclick="goDashboard()">取消</button>
+    </div>
+  </div>
+
+  <!-- ============ Detail ============ -->
+  <div class="view" id="view-detail">
+    <div class="detail-header">
+      <div class="theme" id="d-theme"></div>
+      <div class="meta-line">
+        <span id="d-identity"></span>
+        <span id="d-work"></span>
+        <span id="d-date"></span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('posts')" id="tab-btn-posts">📝 貼文題目 (10)</button>
+      <button class="tab-btn" onclick="switchTab('videos')" id="tab-btn-videos">🎬 影片題目 (6)</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-posts"></div>
+    <div class="tab-panel" id="tab-videos"></div>
+
+    <div class="idea-hint" style="margin:-8px 0 16px; color:var(--gray);">
+      💡 這些內容是起點，建議依照你自己的真實經驗調整用字和語氣，不建議完全照抄——換成自己的語氣，內容才會真的像你。
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-primary" id="btn-upgrade-detail" href="#" target="_blank" style="display:none; text-decoration:none; text-align:center;">🔓 購買完整版，解鎖無限抽籤</a>
+      <button class="btn btn-ghost" onclick="goList()">返回列表</button>
+    </div>
+  </div>
+
+  <!-- ============ About / FAQ ============ -->
+  <div class="view" id="view-about">
+    <div style="text-align:center; padding:8px 0 4px;">
+      <div style="font-size:38px; font-weight:900; letter-spacing:2px; background:linear-gradient(135deg, var(--pink), var(--blue)); -webkit-background-clip:text; background-clip:text; color:transparent;">🎴 靈感籤筒</div>
+      <div class="page-sub" style="margin-top:6px;">給每天不知道要拍什麼的你，抽一支籤</div>
+    </div>
+
+    <div class="section-block">
+      <h3>✦ 主理人的話</h3>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <img src="data:image/jpeg;base64,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" style="width:52px; height:52px; border-radius:50%; object-fit:cover; flex-shrink:0;" alt="艾亞 Aya">
+        <div>
+          <div style="font-weight:900; font-size:15px;"><u>艾亞 Aya</u></div>
+          <div style="font-size:12px; color:var(--gray);">靈感籤筒．主理人</div>
+        </div>
+      </div>
+      <div style="font-size:13px; color:var(--medium); line-height:1.8;">
+        這套工具不是我看幾篇文章就生出來的。這段時間我自己也繳過不少學費——上過主打 AI 應用的免費與付費課程，一步步試錯、卡關、重新調整，才慢慢摸出一套真的能每天用的方法。
+        <br><br>
+        做出靈感籤筒，是想把我自己走過的這段路縮短——讓你不用再花時間找老師、報名課程、自己從頭摸索，直接拿到一個已經整理好、打開就能用的工具。
+      </div>
+      <div style="margin-top:14px; font-size:13px;">
+        📍 <a href="https://www.instagram.com/hiaya.mama" target="_blank" style="color:var(--pink); font-weight:700; text-decoration:none;">@hiaya.mama</a>　
+        📍 <a href="https://www.instagram.com/lia.luna.2026" target="_blank" style="color:var(--pink); font-weight:700; text-decoration:none;">@lia.luna.2026</a>　
+        📘 <a href="https://www.facebook.com/hiaya.mama/" target="_blank" style="color:var(--pink); font-weight:700; text-decoration:none;">hiaya.mama</a>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>這個工具在做什麼</h3>
+      <div style="font-size:13px; color:var(--medium); line-height:1.8;">
+        輸入你的身份、產業和今天想聊的主題，靈感籤筒會直接抽出 <b>10 組貼文題目＋6 組影片題目</b>。每一組給的不只是一句敘述，而是能勾住前 3 秒注意力的<b>「鉤子式標題」</b>，並且結合<b>「職業/產業關鍵字」</b>與<b>「個人興趣關鍵字」</b>的<b>九宮格組合</b>，讓題目更貼近你這個人、不是套版口號。題庫<b>超過 50 組</b>原創手法組合，隨機抽出，不容易抽到重複。
+        <br><br>
+        當然，正式版還有<b style="color:var(--dark);">「一次產生 30 天份選題」</b>的功能，勾選之後能一口氣排出<b style="color:var(--dark);">一整個月的份量</b>，不用每天再打開來抽一次——這個<b style="color:var(--dark);">試用版</b>可以先<b style="color:var(--dark);">體驗抽 1 次</b>完整內容，感受一下實際效果。
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>關於我</h3>
+      <div style="font-size:13px; color:var(--medium); line-height:1.9;">
+        我是艾亞 Aya，一個晚婚又晚生、快要 50 歲的媽媽，孩子現在兩歲，為了照顧他申請了育嬰留停，暫時退到家庭裡。
+        <br><br>
+        我在保險業待了 22 年，習慣把複雜的東西講得讓人聽得懂；後來因為想兼顧照顧孩子、又想證明自己在家也有賺錢能力，開始經營自媒體。我發現很多媽媽其實不是沒有能力，而是為了孩子不得不暫時退居家庭——想做點什麼、卻常常心有餘而力不足。
+        <br><br>
+        對 AI 我一直很有興趣，上過不少免費的行銷和 AI 相關課程，最後也自己摸索、試錯了不少；坊間課程動輒四五萬起，便宜的也要五六千。這些費用對一個手心向上、暫時沒有收入的媽媽來說，其實是不小的負擔。
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>靈感籤筒的由來</h3>
+      <div style="font-size:13px; color:var(--medium); line-height:1.9;">
+        做自媒體的時候，工具不會用，可以學；帳號經營不熟，可以慢慢摸索。但每天打開手機那一刻的「今天到底要拍什麼」，才是真正卡住人的地方——這件事沒有教學影片能一次解決，因為每天都要重新面對。
+        <br><br>
+        所以我想做一個像去廟裡抽籤一樣的小工具：不用想破頭，照著你的身份、產業、主題，隨手一抽，就有接下來幾天可以用的題材。這就是靈感籤筒的由來——它不是要取代你的想法，而是幫你把「決定今天拍什麼」這一步，變得像抽籤一樣輕鬆。
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h3>常見問題</h3>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>我完全沒有經營自媒體的經驗，適合用嗎？</div>
+        <div class="faq-a">適合。這個工具本來就是設計給還在摸索方向的人——你不需要先懂拍攝或文案技巧，只要填入你的身份和想聊的主題，剩下的題目與架構由籤筒幫你抽出來。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>我完全不會用 ChatGPT 或其他 AI 工具，可以用嗎？</div>
+        <div class="faq-a">可以。這個工具本身就會直接產出完整的貼文與影片內容，不需要你另外操作任何 AI 服務。如果想請 AI 幫忙潤色語氣，每組內容都有「複製請AI微調提示詞」按鈕，貼上就能用，不用自己想怎麼下指令，也不會多耗你的 AI 額度。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>為什麼要做成「籤筒」的形式？</div>
+        <div class="faq-a">因為選題最累人的地方，是「要從哪裡開始想」。抽籤這個動作本身就在幫你跳過空想的階段，直接給你一個可以動手拍的起點，心理負擔會小很多。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>需要下載安裝或註冊會員嗎？</div>
+        <div class="faq-a">不用。這是一個網頁工具，用手機或電腦瀏覽器打開就能用，資料只存在你自己的裝置裡，不用註冊帳號，也不用綁信用卡。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>頁面上的「匯出」「匯入」是做什麼用的？</div>
+        <div class="faq-a">這是正式版才有的功能：「匯出」會把你所有的選題資料打包成一個備份檔下載下來；「匯入」則可以把備份檔還原回來。適合在換手機、清瀏覽器資料，或想把資料搬到另一台裝置之前先備份一份，避免資料不見。試用版沒有這兩顆按鈕，購買解鎖完整版之後就會出現。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>試用版沒有匯出功能，怎麼保留抽到的內容？</div>
+        <div class="faq-a">試用版本身沒有匯出功能，如果想把抽到的內容留下來，可以直接<b>截圖畫面</b>保存；或是點「複製內容」把文字複製起來，貼到手機備忘錄、LINE的「跟自己聊天」、Google文件等你平常會用的地方另外存一份。只要不要清瀏覽器資料、也不換裝置，其實工具裡的資料本來就會一直留著，不特別處理也沒關係。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>我同時經營好幾個帳號，可以分開管理選題嗎？</div>
+        <div class="faq-a">可以。每一次抽籤都是獨立的一筆選題紀錄，你可以在身份欄位填入不同帳號的定位，列表也能用關鍵字搜尋，方便你分開檢視。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>買了之後要怎麼收到？</div>
+        <div class="faq-a">完成付款後，系統會自動寄送下載連結到你填寫的信箱，不需要人工核對截圖，也不用另外加官方帳號等待。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>費用是一次性的，還是要訂閱？</div>
+        <div class="faq-a">一次買斷，永久使用，不會有額外的訂閱費用。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>我不是美業／網紅型創作者，這個工具適合我嗎？</div>
+        <div class="faq-a">適合。分類欄位是開放式輸入，不限定特定產業——不管你是保險、房仲、色彩分析、親子、餐飲還是其他任何領域，都可以填入自己的身份與關鍵字，產生對應的內容方向。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>抽出來的題目會不會跟別人重複？</div>
+        <div class="faq-a">題庫超過 50 組原創手法，加上你填入的身份、產業、興趣關鍵字都不一樣，實際組合出來的內容會因人而異，不會跟其他使用者長得一模一樣。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>這個工具會保證我流量或粉絲變多嗎？</div>
+        <div class="faq-a">不會，也不能這樣保證。這個工具幫你解決「不知道要拍什麼」的困擾，提供結構化的題目與內容起點；實際成效還是取決於你投入的時間、拍攝方式與經營頻率。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>產生的內容可以直接貼上發佈嗎？</div>
+        <div class="faq-a">可以直接使用，但建議依照你自己的現況與真實經驗調整用字和語氣。不建議完全照抄——換成自己的語氣，內容才會真的像你，效果通常也會更好。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>之後系統更新，我需要再付費嗎？</div>
+        <div class="faq-a">已購買的版本可以持續使用。如果未來推出功能更完整的進階版本，會另外公告，不會強迫升級或額外收費。</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q"><span class="qmark">Q</span>可以退款嗎？</div>
+        <div class="faq-a">這是數位內容商品，一經下載即完成交付，不適用七天鑑賞期，恕無法退款，請於購買前確認使用情境與需求是否符合。</div>
+      </div>
+    </div>
+
+    <div class="section-block" style="background:var(--light-blue);">
+      <h3>誠實聲明</h3>
+      <div style="font-size:13px; color:var(--medium); line-height:1.7;">
+        這個工具是幫助你更有效率地產生內容題目與架構，不是保證流量、粉絲數或業績成長的工具。每個人使用後的成果，會依照實際執行方式、頻率與內容品質而不同。
+      </div>
+    </div>
+
+    <div class="section-block" style="background:var(--light-sage);">
+      <h3>關於你輸入的資料</h3>
+      <div style="font-size:13px; color:var(--medium); line-height:1.8;">
+        靈感籤筒是提供個人創作靈感用的工具，你填寫的身份、主題、關鍵字等內容只會存在你自己裝置的瀏覽器裡，不會上傳到任何伺服器，艾亞本人也無法看到或蒐集這些資料。
+        <br><br>
+        <b style="color:var(--pink);">提醒你：填寫欄位時，請避免輸入身分證字號、聯絡方式、財務資訊等敏感個人資料，保護好自己的隱私。</b>
+      </div>
+    </div>
+
+    <div class="section-block" style="background:var(--light-sage);">
+      <h3>原創聲明</h3>
+      <div style="font-size:13px; color:var(--medium); line-height:1.7;">
+        靈感籤筒的題庫、文字內容與工具設計，皆為<b><u>艾亞 Aya</u></b> 獨立發想與撰寫，非取自或改寫自任何特定創作者、課程或既有產品。若與市面上其他工具在概念或形式上有相似之處，屬於自媒體經營領域的共通知識與常見手法，並非刻意抄襲。
+        <br><br>
+        本工具僅供購買者個人使用，禁止轉售、出租、公開散布原始檔案或轉發下載連結；產生之內容建議使用者依自身情況調整後再對外發佈，使用者對其最終發佈之內容自負相關責任。
+        <br><br>
+        © 靈感籤筒．<u>艾亞 Aya</u>　
+        <a href="https://www.instagram.com/hiaya.mama" target="_blank" style="color:var(--pink); font-weight:700; text-decoration:none;">@hiaya.mama</a>　
+        <a href="https://www.instagram.com/lia.luna.2026" target="_blank" style="color:var(--pink); font-weight:700; text-decoration:none;">@lia.luna.2026</a>　
+        <a href="https://www.facebook.com/hiaya.mama/" target="_blank" style="color:var(--pink); font-weight:700; text-decoration:none;">FB@hiaya.mama</a>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="goDashboard()">返回儀表板</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button class="active" onclick="goDashboard()" data-view="view-dashboard"><span class="ic">🏠</span>儀表板</button>
+  <button onclick="goList()" data-view="view-list"><span class="ic">📋</span>選題列表</button>
+  <button onclick="goForm()" data-view="view-form"><span class="ic">➕</span>新增選題</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="import-modal">
+  <div class="modal-box">
+    <h3>匯入備份檔</h3>
+    <p>選擇先前匯出的 .json 備份檔。匯入將會<b>覆蓋目前所有資料</b>，建議先匯出現有資料備份。</p>
+    <input type="file" id="import-file" accept="application/json" style="margin-bottom:14px;">
+    <div class="form-actions" style="margin-top:0;">
+      <button class="btn btn-primary" onclick="doImport()">確認匯入</button>
+      <button class="btn btn-ghost" onclick="closeImportModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   資料層
+============================================================ */
+const STORAGE_KEY = 'ideaEngine_topics_v1';
+const TRIAL_KEY = 'ideaEngine_trialUsed_v1';
+/* ⚠️ 請把下面這行換成你自己的 Portaly 購買連結 */
+const PURCHASE_LINK = 'https://portaly.cc/YOUR-LINK-HERE';
+
+let topics = [];
+let currentEditId = null;
+let currentDetailId = null;
+
+function isTrialUsed(){
+  return localStorage.getItem(TRIAL_KEY) === '1';
+}
+function markTrialUsed(){
+  localStorage.setItem(TRIAL_KEY, '1');
+}
+function updateTrialUI(){
+  const btn = document.getElementById('btn-generate');
+  const line = document.getElementById('trial-status-line');
+  if(!btn || !line) return;
+  if(isTrialUsed()){
+    btn.textContent = '🔒 已用完免費試用，前往購買解鎖';
+    btn.onclick = function(){ window.open(PURCHASE_LINK, '_blank'); };
+    line.innerHTML = '🔒 免費試用已用完 — <a href="' + PURCHASE_LINK + '" target="_blank" style="color:var(--pink); font-weight:900;">前往購買完整版</a>';
+  }else{
+    btn.textContent = '🎴 抽籤產生選題（免費試用 1 次）';
+    btn.onclick = generateAndSave;
+    line.textContent = '🎴 免費試用：可以抽 1 次完整內容（10組貼文+6組影片）';
+  }
+}
+
+function loadTopics(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    topics = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    topics = [];
+  }
+}
+function saveTopics(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(topics));
+}
+function uid(){
+  return 'id_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+/* ============================================================
+   選題產生引擎（模板庫隨機組合，不串接 AI）
+============================================================ */
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+const PAIN_POINTS = ['花大錢','熬夜','跟別人比較','燒廣告費','靠天分','從頭來過','犧牲陪家人的時間'];
+const RESULTS = ['接到第一筆訂單','存到第一桶金','被客戶主動介紹','流量翻了好幾倍','終於不再焦慮','找到自己的步調'];
+
+function hookTemplates(theme, identity, work, careerKw, hobbyKw){
+  const N = randInt(7,90);
+  const smallN = randInt(1,10);
+  const bigN = randInt(50,300);
+  const painPoint = pick(PAIN_POINTS);
+  const result = pick(RESULTS);
+  const blendKw = (careerKw.length && hobbyKw.length)
+    ? `${pick(careerKw)}x${pick(hobbyKw)}`
+    : (careerKw.length ? pick(careerKw) : (hobbyKw.length ? pick(hobbyKw) : theme));
+
+  const N2 = randInt(2,8);
+  return [
+    // 時間軸真實身份法
+    { type:'時間軸真實身份法', title:`身為${identity}，我用${N}天把「${theme}」做到${result}` },
+    { type:'時間軸真實身份法', title:`${identity}的真心話：花了${N}天搞懂${theme}，早知道就早點開始` },
+    { type:'時間軸真實身份法', title:`從${identity}的第一天到現在，${N2}週過去，${theme}徹底不一樣了` },
+    { type:'時間軸真實身份法', title:`用${identity}的身份紀錄${N}天：關於${theme}的真實進度` },
+    { type:'時間軸真實身份法', title:`${N2}個月前的我完全不懂${theme}；現在的${identity}，想把過程留下來` },
+    { type:'時間軸真實身份法', title:`這是${identity}的${N}天挑戰：把${theme}從零做到看得到成果` },
+    // 正反提問對照法
+    { type:'正反提問對照法', title:`你以為${theme}靠的是天分？其實我靠的是這一招` },
+    { type:'正反提問對照法', title:`改變前 vs 改變後：${identity}做了${theme}之後發生什麼事` },
+    { type:'正反提問對照法', title:`${theme}真的有效嗎？親自實測給你看結果` },
+    { type:'正反提問對照法', title:`大家都說${theme}很難，真的是這樣嗎？${identity}的答案可能顛覆你` },
+    { type:'正反提問對照法', title:`「${theme}」該怎麼做才對？我從錯的方法換到對的方法` },
+    { type:'正反提問對照法', title:`同樣是${work}，為什麼結果差這麼多？關鍵在${theme}` },
+    // 生活情緒共感法
+    { type:'生活情緒共感法', title:`${work}的時候，我因為${theme}差點崩潰，後來這樣走過來` },
+    { type:'生活情緒共感法', title:`老實說，做${identity}最不敢說出口的心情：關於${theme}` },
+    { type:'生活情緒共感法', title:`有些話只敢在這裡說：${theme}讓我壓力很大的那段時間` },
+    { type:'生活情緒共感法', title:`${identity}的日常小崩潰：面對${theme}的真實心情紀錄` },
+    { type:'生活情緒共感法', title:`說出來才輕鬆：${theme}這件事我憋了好久` },
+    { type:'生活情緒共感法', title:`如果你也在${work}，你會懂那種被${theme}壓垮的感覺` },
+    // 情境代入敘事法
+    { type:'情境代入敘事法', title:`如果你也是${identity}，你一定懂${theme}的這種感覺` },
+    { type:'情境代入敘事法', title:`這不只是我的故事，是每個${identity}都會遇到的${theme}` },
+    { type:'情境代入敘事法', title:`我朋友問我${theme}該怎麼辦，把答案整理給所有${identity}` },
+    { type:'情境代入敘事法', title:`你身邊是不是也有一個${identity}，正為了${theme}煩惱` },
+    { type:'情境代入敘事法', title:`寫給正在${work}路上的你：${theme}這一關，大家都要過` },
+    { type:'情境代入敘事法', title:`這篇是說給過去的自己聽的：關於${theme}，我多希望有人早點告訴我` },
+    // 數字反差鉤子法
+    { type:'數字反差鉤子法', title:`只花${smallN}分鐘，卻讓${theme}的成效差了${bigN}%，數字告訴你原因` },
+    { type:'數字反差鉤子法', title:`從${smallN}到${bigN}：${identity}靠${theme}翻轉的真實數字` },
+    { type:'數字反差鉤子法', title:`${smallN}個小動作，換來${theme}${bigN}%的差距` },
+    { type:'數字反差鉤子法', title:`別人要${N}天，我${smallN}天就做到${theme}的關鍵一步` },
+    { type:'數字反差鉤子法', title:`數字不會說謊：${theme}前後差了${bigN}%，原因就藏在細節裡` },
+    { type:'數字反差鉤子法', title:`${identity}用${smallN}個步驟，換到${theme}${bigN}%的改變` },
+    // 低投入高回報法
+    { type:'低投入高回報法', title:`起點很普通：我只做了一個小改變，${theme}就完全不一樣` },
+    { type:'低投入高回報法', title:`沒有資源、沒有經驗，${identity}靠${theme}從零開始的故事` },
+    { type:'低投入高回報法', title:`不用花大錢，${theme}也能做到這個程度` },
+    { type:'低投入高回報法', title:`一個免費的小方法，讓${theme}整個翻轉` },
+    { type:'低投入高回報法', title:`${identity}靠最少的資源，把${theme}做出最大的效果` },
+    { type:'低投入高回報法', title:`別人砸重本做${theme}，我只用一個小方法就達到類似效果` },
+    // 限時成果承諾法
+    { type:'限時成果承諾法', title:`${N}天內搞定${theme}，而且不用${painPoint}` },
+    { type:'限時成果承諾法', title:`${identity}教你：${N2}週內處理好${theme}，不${painPoint}` },
+    { type:'限時成果承諾法', title:`給你一個期限：${N}天內解決${theme}，不用${painPoint}` },
+    { type:'限時成果承諾法', title:`不用${painPoint}，${identity}靠這套方法${N}天看到${theme}成果` },
+    { type:'限時成果承諾法', title:`${N}天挑戰：不${painPoint}也能搞定${theme}` },
+    { type:'限時成果承諾法', title:`時間有限也能做到：${N}天內完成${theme}，還不用${painPoint}` },
+    // 精準受眾點名法
+    { type:'精準受眾點名法', title:`給正在${work}的${identity}：關於${theme}你一定要知道的事` },
+    { type:'精準受眾點名法', title:`只有${identity}才懂的${theme}生存指南` },
+    { type:'精準受眾點名法', title:`這篇只寫給${identity}看：${theme}的真心話` },
+    { type:'精準受眾點名法', title:`如果你正在${work}，這篇${theme}的內容是為你寫的` },
+    { type:'精準受眾點名法', title:`給還在猶豫要不要${theme}的${identity}，這篇說給你聽` },
+    { type:'精準受眾點名法', title:`專門整理給${identity}的${theme}重點，別人看不懂沒關係` },
+    // 雙軸關鍵字混搭法
+    { type:'雙軸關鍵字混搭法', title:`把「${blendKw}」放在一起，意外拼出了「${theme}」的新解法` },
+    { type:'雙軸關鍵字混搭法', title:`${identity}的日常：把${blendKw}混在一起過生活，也混出了${theme}的靈感` },
+    { type:'雙軸關鍵字混搭法', title:`誰說${blendKw}不能一起講？這就是${theme}的靈感來源` },
+    { type:'雙軸關鍵字混搭法', title:`把興趣跟工作混在一起：${blendKw}教會我的${theme}` },
+    { type:'雙軸關鍵字混搭法', title:`${blendKw}兩個看似無關的東西，湊出了${theme}最真實的一面` },
+    { type:'雙軸關鍵字混搭法', title:`從${blendKw}找到切入點，重新詮釋${theme}` }
+  ];
+}
+
+function bodyForPost(hookTitle, theme, identity, work){
+  const variants = [
+    () => `【封面小標】${hookTitle}
+
+【輪播內容架構】
+1. 痛點｜你在${work}時是不是也遇過「${theme}」的困擾？
+2. 價值｜整理 3 個重點，帶出你對「${theme}」的具體做法或觀察
+3. 轉變｜說出做了這件事之後，你（或客戶／讀者）的改變
+4. 結尾 CTA｜留言互動或引導私訊／收藏
+
+【小提醒】封面標題就是上面這句 hook，內文用短句、口語化，避免太抽象籠統。`,
+    () => `【封面小標】${hookTitle}
+
+【貼文架構｜疑問開場式】
+開場｜先拋一個跟「${theme}」有關的疑問，讓${identity}的讀者忍不住想繼續看下去
+中段｜用你在${work}的實際經驗回答這個疑問，穿插一兩個具體細節
+結尾｜留一句反問句，引導讀者留言分享自己的狀況
+
+【小提醒】疑問句盡量口語、貼近日常對話，不要寫得太像標題。`,
+    () => `【封面小標】${hookTitle}
+
+【貼文架構｜先講結果式】
+先講結果｜直接說出「${theme}」帶來的改變或發現
+倒敘過程｜回頭說明在${work}中你是怎麼走到這個結果的
+結尾｜給正在經歷同樣狀況的${identity}一句具體建議
+
+【小提醒】先講結果的寫法能增加停留率，讀者會想知道你怎麼做到的。`,
+    () => `【封面小標】${hookTitle}
+
+【清單式貼文架構】
+列出跟「${theme}」有關的三件事：一件是你曾經誤會的觀念、一件是你後來調整的做法、一件是你想提醒${identity}特別注意的地方
+結尾｜用一句話總結你在${work}中學到的心得
+
+【小提醒】清單式內容適合輪播，每一頁放一個重點，畫面不要塞太多字。`
+  ];
+  return variants[Math.floor(Math.random()*variants.length)]();
+}
+
+function bodyForVideo(hookTitle, theme, identity, work){
+  const variants = [
+    () => `【腳本架構｜60秒公式】
+0-3s／Hook：${hookTitle}
+4-15s／痛點：點出「${theme}」讓${identity}最卡關的地方
+16-35s／方法：分享具體怎麼做、用什麼步驟或工具
+36-50s／案例：舉一個「${work}」中真實發生的例子或數據
+51-60s／CTA：一句話引導追蹤、留言或點擊連結
+
+【小提醒】少解釋、多示範；能用「改造前→改造後」呈現會更有說服力。`,
+    () => `【腳本架構｜對話開場式】
+0-3s／Hook：${hookTitle}
+4-20s／用第一人稱直接對鏡頭說一段關於「${theme}」的真心話，像在跟朋友聊天
+21-45s／穿插1-2個在${work}裡實際發生的畫面或例子
+46-60s／收尾一句提醒或反問，引導留言
+
+【小提醒】對話式開場適合真人露臉拍攝，語氣越自然越好，不用刻意背稿。`,
+    () => `【腳本架構｜過程紀錄式】
+0-3s／Hook：${hookTitle}
+4-25s／用畫面帶出你在${work}處理「${theme}」的實際過程（可搭配空景或操作畫面）
+26-45s／中途穿插一句旁白說明你當下的想法或轉折
+46-60s／結尾放上結果或成品，搭配一句CTA
+
+【小提醒】過程紀錄式不用露臉也能拍，適合不擅長對鏡頭說話的${identity}。`
+  ];
+  return variants[Math.floor(Math.random()*variants.length)]();
+}
+
+function buildDailyPlan(theme, identity, work, careerKw, hobbyKw, days){
+  const pool = hookTemplates(theme, identity, work, careerKw, hobbyKw);
+  const shuffledPool = [...pool].sort(()=>Math.random()-0.5);
+  const basePattern = [...Array(10).fill('post'), ...Array(6).fill('video')].sort(()=>Math.random()-0.5);
+  const results = [];
+  for(let i=0;i<days;i++){
+    const type = basePattern[i % basePattern.length];
+    const hook = shuffledPool[i % shuffledPool.length];
+    const content = type==='post' ? bodyForPost(hook.title, theme, identity, work) : bodyForVideo(hook.title, theme, identity, work);
+    results.push({ dayIndex: i+1, type, hookType: hook.type, title: hook.title, content });
+  }
+  return results;
+}
+
+function generateIdeas(theme, identity, work, careerKw, hobbyKw){
+  const pool = hookTemplates(theme, identity, work, careerKw, hobbyKw);
+  // shuffle pool
+  const shuffled = [...pool].sort(()=>Math.random()-0.5);
+  const postsSrc = shuffled.slice(0, 10);
+  const videosSrc = shuffled.length >= 16 ? shuffled.slice(10,16) : shuffled.slice(0,6).reverse();
+
+  const posts = postsSrc.map((h,i)=>({
+    no: i+1,
+    type: h.type,
+    title: h.title,
+    content: bodyForPost(h.title, theme, identity, work),
+    checked: false
+  }));
+  const videos = videosSrc.map((h,i)=>({
+    no: i+1,
+    type: h.type,
+    title: h.title,
+    content: bodyForVideo(h.title, theme, identity, work),
+    checked: false
+  }));
+  return { posts, videos };
+}
+
+/* ============================================================
+   畫面切換
+============================================================ */
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  const navBtn = document.querySelector(`.nav button[data-view="${id}"]`);
+  if(navBtn) navBtn.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goDashboard(){ renderDashboard(); showView('view-dashboard'); }
+function goAbout(){ showView('view-about'); }
+function goList(){ renderList(); showView('view-list'); }
+function goForm(){
+  currentEditId = null;
+  document.getElementById('form-title').textContent = '新增選題';
+  ['f-theme','f-identity','f-work','f-tagline','f-career-kw','f-hobby-kw','f-notes'].forEach(id=>document.getElementById(id).value='');
+  updateTrialUI();
+  showView('view-form');
+}
+
+/* ============================================================
+   Dashboard
+============================================================ */
+function renderDashboard(){
+  document.getElementById('stat-total').textContent = topics.length;
+
+  const dashLine = document.getElementById('dashboard-trial-line');
+  if(dashLine){
+    if(isTrialUsed()){
+      dashLine.innerHTML = '🔒 免費試用已用完 — <a href="' + PURCHASE_LINK + '" target="_blank" style="color:var(--pink); font-weight:900;">前往購買完整版，解鎖無限抽籤</a>';
+    }else{
+      dashLine.innerHTML = '🎴 這是<span style="color:var(--pink); font-weight:900;">試用版</span>，可以免費體驗抽 1 次完整選題（10組貼文+6組影片）';
+    }
+  }
+
+  const weekAgo = Date.now() - 7*24*60*60*1000;
+  const weekCount = topics.filter(t=>t.createdAt >= weekAgo).length;
+  document.getElementById('stat-week').textContent = weekCount;
+
+  let postTotal=0, postUsed=0, videoTotal=0, videoUsed=0;
+  topics.forEach(t=>{
+    postTotal += t.posts.length;
+    postUsed += t.posts.filter(p=>p.checked).length;
+    videoTotal += t.videos.length;
+    videoUsed += t.videos.filter(v=>v.checked).length;
+  });
+  document.getElementById('stat-posts-used').textContent = `${postUsed}/${postTotal}`;
+  document.getElementById('stat-videos-used').textContent = `${videoUsed}/${videoTotal}`;
+
+  const recentBox = document.getElementById('dashboard-recent');
+  const recent = [...topics].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  if(recent.length===0){
+    recentBox.innerHTML = `<div class="empty-hint"><span class="big-ic">🎴</span>還沒有任何選題，抽第一支籤看看吧！</div>`;
+    return;
+  }
+  recentBox.innerHTML = recent.map(t=>renderTopicCardHTML(t)).join('');
+}
+
+/* ============================================================
+   List
+============================================================ */
+function renderTopicCardHTML(t){
+  const usedPosts = t.posts.filter(p=>p.checked).length;
+  const usedVideos = t.videos.filter(v=>v.checked).length;
+  const dateStr = new Date(t.createdAt).toLocaleDateString('zh-TW');
+  return `
+  <div class="topic-card" onclick="openDetail('${t.id}')">
+    <div class="top-row">
+      <div class="theme">${escapeHTML(t.theme)}${t.dayIndex ? ` <span class="tag">Day ${t.dayIndex}</span>` : ''}</div>
+      <div class="date">${dateStr}</div>
+    </div>
+    <div class="meta">
+      ${t.identity ? `<span class="tag">${escapeHTML(t.identity)}</span>`:''}
+      ${t.workContent ? `<span class="tag sage">${escapeHTML(t.workContent)}</span>`:''}
+    </div>
+    <div class="progress-row">
+      <span>貼文已用 <b>${usedPosts}/${t.posts.length}</b></span>
+      <span>影片已用 <b>${usedVideos}/${t.videos.length}</b></span>
+    </div>
+  </div>`;
+}
+
+function renderList(){
+  const kw = document.getElementById('search-input').value.trim().toLowerCase();
+  const filter = document.getElementById('filter-select').value;
+  let list = [...topics].sort((a,b)=>b.createdAt-a.createdAt);
+
+  if(kw){
+    list = list.filter(t=>
+      (t.theme||'').toLowerCase().includes(kw) ||
+      (t.identity||'').toLowerCase().includes(kw) ||
+      (t.workContent||'').toLowerCase().includes(kw)
+    );
+  }
+  if(filter==='used'){
+    list = list.filter(t=> t.posts.some(p=>p.checked) || t.videos.some(v=>v.checked));
+  }else if(filter==='unused'){
+    list = list.filter(t=> !t.posts.some(p=>p.checked) && !t.videos.some(v=>v.checked));
+  }
+
+  const box = document.getElementById('list-container');
+  if(list.length===0){
+    box.innerHTML = `<div class="empty-hint"><span class="big-ic">🔍</span>找不到符合條件的選題</div>`;
+    return;
+  }
+  box.innerHTML = list.map(t=>renderTopicCardHTML(t)).join('');
+}
+
+/* ============================================================
+   Form / 產生 & 儲存
+============================================================ */
+function generateAndSave(){
+  if(isTrialUsed()){
+    window.open(PURCHASE_LINK, '_blank');
+    return;
+  }
+
+  const theme = document.getElementById('f-theme').value.trim();
+  const identity = document.getElementById('f-identity').value.trim() || '創作者';
+  const work = document.getElementById('f-work').value.trim() || '日常工作';
+  const tagline = document.getElementById('f-tagline').value.trim();
+  const careerKw = document.getElementById('f-career-kw').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const hobbyKw = document.getElementById('f-hobby-kw').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const notes = document.getElementById('f-notes').value.trim();
+
+  if(!theme){
+    showToast('請先填寫「主題」再抽籤喔');
+    return;
+  }
+
+  const effectiveIdentity = tagline ? `${identity}（${tagline}）` : identity;
+  const { posts, videos } = generateIdeas(theme, effectiveIdentity, work, careerKw, hobbyKw);
+
+  const t = {
+    id: uid(),
+    theme, identity, workContent: work, tagline,
+    careerKw, hobbyKw, notes,
+    posts, videos,
+    createdAt: Date.now(), updatedAt: Date.now()
+  };
+  topics.push(t);
+  saveTopics();
+  markTrialUsed();
+  showToast('抽籤成功，已產生 10 組貼文 + 6 組影片題目（免費試用已用完 1 次）');
+  openDetail(t.id);
+}
+
+function editTopic(id){
+  const t = topics.find(x=>x.id===id);
+  if(!t) return;
+  currentEditId = id;
+  document.getElementById('form-title').textContent = '編輯選題';
+  document.getElementById('btn-delete-topic').style.display = 'inline-block';
+  document.getElementById('f-theme').value = t.theme || '';
+  document.getElementById('f-identity').value = t.identity || '';
+  document.getElementById('f-work').value = t.workContent || '';
+  document.getElementById('f-tagline').value = t.tagline || '';
+  document.getElementById('f-career-kw').value = (t.careerKw||[]).join(', ');
+  document.getElementById('f-hobby-kw').value = (t.hobbyKw||[]).join(', ');
+  document.getElementById('f-notes').value = t.notes || '';
+  showView('view-form');
+}
+
+function deleteCurrentTopic(){
+  if(!currentEditId) return;
+  if(!confirm('確定要刪除這組選題嗎？此動作無法復原。')) return;
+  topics = topics.filter(t=>t.id!==currentEditId);
+  saveTopics();
+  showToast('已刪除');
+  currentEditId = null;
+  goList();
+}
+
+/* ============================================================
+   Detail
+============================================================ */
+function openDetail(id){
+  const t = topics.find(x=>x.id===id);
+  if(!t) return;
+  currentDetailId = id;
+  document.getElementById('d-theme').textContent = t.theme;
+  document.getElementById('d-identity').textContent = '👤 ' + (t.identity||'—') + (t.tagline ? `｜${t.tagline}` : '');
+  document.getElementById('d-work').textContent = '💼 ' + (t.workContent||'—');
+  document.getElementById('d-date').textContent = '🗓 ' + new Date(t.createdAt).toLocaleDateString('zh-TW');
+
+  renderIdeaList('tab-posts', t.posts, t.id, 'posts');
+  renderIdeaList('tab-videos', t.videos, t.id, 'videos');
+  switchTab('posts');
+
+  const upgradeBtn = document.getElementById('btn-upgrade-detail');
+  if(isTrialUsed()){
+    upgradeBtn.style.display = 'block';
+    upgradeBtn.href = PURCHASE_LINK;
+  }else{
+    upgradeBtn.style.display = 'none';
+  }
+
+  showView('view-detail');
+}
+
+function renderIdeaList(containerId, ideas, topicId, kind){
+  const box = document.getElementById(containerId);
+  box.innerHTML = ideas.map(idea=>`
+    <div class="idea-item ${idea.checked?'used':''}">
+      <div class="no-badge">${idea.no}</div>
+      <div class="idea-body">
+        <div class="idea-title">${escapeHTML(idea.title)}</div>
+        <div class="idea-hint">手法：${escapeHTML(idea.type)}</div>
+        <a class="toggle-content-btn" onclick="toggleContent(this)">查看完整內容 ▾</a>
+        <div class="idea-content" data-title="${escapeHTML(idea.title)}">${escapeHTML(idea.content)}<br>
+          <a class="copy-btn" onclick="copyContent(this)">📋 複製內容</a>
+          <a class="copy-btn" onclick="copyAiRefinePrompt(this)" style="margin-left:14px;">🤖 複製「請AI微調」提示詞</a>
+        </div>
+      </div>
+      <div class="checkbox-wrap">
+        <input type="checkbox" ${idea.checked?'checked':''} onchange="toggleUsed('${topicId}','${kind}',${idea.no},this.checked)">
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleContent(el){
+  const contentBox = el.nextElementSibling;
+  const isShown = contentBox.classList.toggle('show');
+  el.textContent = isShown ? '收合內容 ▴' : '查看完整內容 ▾';
+}
+
+function copyContent(el){
+  const text = el.parentElement.firstChild.textContent;
+  navigator.clipboard.writeText(el.parentElement.textContent.replace('📋 複製內容','').trim())
+    .then(()=>showToast('已複製到剪貼簿'))
+    .catch(()=>showToast('複製失敗，請手動選取文字'));
+}
+
+function copyAiRefinePrompt(el){
+  const box = el.parentElement;
+  const title = box.getAttribute('data-title');
+  const rawContent = box.childNodes[0].textContent;
+  const prompt = `請幫我把以下內容修飾潤色成更像我自己平常說話的口吻，保留原本的架構跟重點，不要整段重寫：\n\n${title}\n\n${rawContent}`;
+  navigator.clipboard.writeText(prompt)
+    .then(()=>showToast('已複製「請AI微調」提示詞，可直接貼給AI'))
+    .catch(()=>showToast('複製失敗，請手動選取文字'));
+}
+
+function toggleUsed(topicId, kind, no, checked){
+  const t = topics.find(x=>x.id===topicId);
+  if(!t) return;
+  const item = t[kind].find(x=>x.no===no);
+  if(item){ item.checked = checked; }
+  t.updatedAt = Date.now();
+  saveTopics();
+  openDetail(topicId); // re-render to update used-styling
+  // restore correct tab
+}
+
+function reshuffleCurrentTopic(){
+  const t = topics.find(x=>x.id===currentDetailId);
+  if(!t) return;
+
+  const hasUsed = t.posts.some(p=>p.checked) || t.videos.some(v=>v.checked);
+  const msg = hasUsed
+    ? '換一批會產生全新的 10 組貼文 + 6 組影片題目，目前已勾選「已使用」的題目也會被取代，確定要換一批嗎？'
+    : '換一批會產生全新的 10 組貼文 + 6 組影片題目，確定要換一批嗎？';
+  if(!confirm(msg)) return;
+
+  const effIdentity = t.tagline ? `${t.identity||'創作者'}（${t.tagline}）` : (t.identity || '創作者');
+  const { posts, videos } = generateIdeas(
+    t.theme, effIdentity, t.workContent || '日常工作',
+    t.careerKw || [], t.hobbyKw || []
+  );
+  t.posts = posts;
+  t.videos = videos;
+  t.updatedAt = Date.now();
+  saveTopics();
+  showToast('已換一批新題目');
+  openDetail(t.id);
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-btn-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+/* ============================================================
+   匯出／匯入
+============================================================ */
+function exportData(){
+  const dataStr = JSON.stringify({ exportedAt: Date.now(), topics }, null, 2);
+  const blob = new Blob([dataStr], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `idea-engine-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('已匯出備份檔');
+}
+
+function openImportModal(){
+  document.getElementById('import-modal').classList.add('show');
+}
+function closeImportModal(){
+  document.getElementById('import-modal').classList.remove('show');
+  document.getElementById('import-file').value = '';
+}
+function doImport(){
+  const fileInput = document.getElementById('import-file');
+  const file = fileInput.files[0];
+  if(!file){ showToast('請先選擇檔案'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      const imported = Array.isArray(data.topics) ? data.topics : (Array.isArray(data) ? data : null);
+      if(!imported) throw new Error('格式錯誤');
+      topics = imported;
+      saveTopics();
+      closeImportModal();
+      showToast('匯入成功');
+      goDashboard();
+    }catch(err){
+      showToast('匯入失敗，檔案格式不正確');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   小工具
+============================================================ */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function escapeHTML(str){
+  if(!str) return '';
+  return str.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============================================================
+   初始化
+============================================================ */
+loadTopics();
+renderDashboard();
+updateTrialUI();
+</script>
+</body>
+</html>
