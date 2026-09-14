@@ -1,1 +1,72 @@
-
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>靈感籤筒｜免費試玩</title>
+<style>
+  :root{
+    --pink:#C9938A; --soft-pink:#E8C4BC; --light-pink:#F5E4E0;
+    --blue:#7A9BAD; --cream:#FAF3EE; --bg:#FAFAF8; --dark:#37352F;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Noto Sans TC', -apple-system, sans-serif;
+    background:var(--bg);
+    color:var(--dark);
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .card{
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 6px 24px rgba(55,53,47,0.10);
+    padding:40px 28px;
+    max-width:400px;
+    width:100%;
+    text-align:center;
+  }
+  .logo{
+    width:56px; height:56px; border-radius:50%;
+    background:linear-gradient(135deg, var(--pink), var(--blue));
+    margin:0 auto 16px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px;
+  }
+  h1{
+    font-size:22px; font-weight:900; margin-bottom:8px;
+  }
+  p{
+    font-size:14px; color:#7a7670; margin-bottom:28px; line-height:1.6;
+  }
+  a.btn{
+    display:block;
+    background:var(--pink);
+    color:#fff;
+    font-size:17px; font-weight:900;
+    padding:16px 24px;
+    border-radius:14px;
+    text-decoration:none;
+    box-shadow:0 4px 14px rgba(201,147,138,0.4);
+    transition:transform .15s, box-shadow .15s;
+  }
+  a.btn:active{
+    transform:scale(0.97);
+    box-shadow:0 2px 8px rgba(201,147,138,0.4);
+  }
+  .footnote{
+    font-size:11px; color:#a8a49e; margin-top:20px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🔮</div>
+    <h1>靈感籤筒</h1>
+    <p>自媒體選題引擎<br>抽一支籤，決定今天要拍什麼</p>
+    <a class="btn" href="https://aya0130.github.io/idea-engine-trial/">🎁 免費抽一次籤</a>
+    <div class="footnote">© 靈感籤筒．艾亞 Aya</div>
+  </div>
+</body>
+</html>
